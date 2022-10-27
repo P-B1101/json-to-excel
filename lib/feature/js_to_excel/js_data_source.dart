@@ -79,6 +79,7 @@ class JSDataSourceImpl implements JSDataSource {
       type: FileType.custom,
     );
     if (files == null || files.files.isEmpty) return null;
+    if (files.files.first.extension != 'json') return null;
     return files.files.first;
   }
 }
