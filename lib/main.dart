@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:json_to_excel/injectable_container.dart';
 
-import 'feature/js_to_excel/js_to_excel_widget.dart';
+import 'feature/js_to_excel/presentation/page/js_to_excel_page.dart';
 
 void main() {
+  configureDependencies();
   runApp(const MyApp());
 }
 
@@ -13,26 +15,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Json to Excel',
+      title: 'Jsob-XLSX Converter',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.deepOrange,
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.deepOrange,
+          accentColor: Colors.blueGrey,
+        ),
       ),
-      home: const MyHomePage(title: 'Select json file'),
+      home: const JsToExcelPage(),
     );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: JsToExcelWidget());
   }
 }

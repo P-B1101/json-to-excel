@@ -1,4 +1,9 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:injectable/injectable.dart';
 import 'package:isolated_worker/js_isolated_worker.dart';
 import 'package:universal_html/html.dart';
 import 'package:universal_html/js.dart' as js;
@@ -7,6 +12,7 @@ const List<String> _jsScripts = <String>['func.js'];
 const String _jsCreateBlobFunc = 'createBlob';
 const String _jsCreateExcelFunc = 'createExcel';
 const String _jsDownloadBlobFunc = 'downloadBlob';
+const String _parseExcelFunc = 'parseExcel';
 
 abstract class JSDataSource {
   Future<String?> createBlob(Blob source);
@@ -19,8 +25,12 @@ abstract class JSDataSource {
   });
 
   Future<PlatformFile?> getJsonFile();
+
+  Future<PlatformFile?> getExcelFile();
+  Future<List<Map<dynamic, dynamic>>> parseExcel(Uint8List data);
 }
 
+@LazySingleton(as: JSDataSource)
 class JSDataSourceImpl implements JSDataSource {
   final JsIsolatedWorker worker;
   final FilePicker filePicker;
@@ -82,4 +92,41 @@ class JSDataSourceImpl implements JSDataSource {
     if (files.files.first.extension != 'json') return null;
     return files.files.first;
   }
+
+  @override
+  Future<PlatformFile?> getExcelFile() async {
+    final files = await filePicker.pickFiles(
+      allowMultiple: false,
+      allowedExtensions: ['xlsx'],
+      type: FileType.custom,
+    );
+    if (files == null || files.files.isEmpty) return null;
+    if (files.files.first.extension != 'xlsx') return null;
+    return files.files.first;
+  }
+
+  @override
+  Future<List<Map>> parseExcel(data) async {
+    if (!_areScriptsImported) {
+      await worker.importScripts(_jsScripts);
+      _areScriptsImported = true;
+    }
+    // Completer completer = Completer();
+    // void func(result) {
+    //   print(result);
+    //   // completer.complete(json.decode(result));
+    // }
+
+    // ;
+
+    final result = await worker.run(
+      functionName: _parseExcelFunc,
+      arguments: [Blob(data)],
+    );
+    // return completer.future;
+    print('result:$result');
+    return result;
+  }
 }
+
+// typedef MFunction = void Function(dynamic);

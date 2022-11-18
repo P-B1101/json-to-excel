@@ -38,3 +38,36 @@ async function createExcel(data) {
     }
 
 }
+
+async function parseExcel(data) {
+    var reader = new FileReader();
+    try {
+        var promise = new Promise((resolutionFunc, rejectionFunc) => {
+            var d = data[0];
+            var result = [];
+            reader.onload = function (e) {
+                var mData = e.target.result;
+                var workbook = XLSX.read(mData, {
+                    type: 'binary'
+                });
+                workbook.SheetNames.forEach(function (sheetName) {
+                    var sheet = workbook.Sheets[sheetName];
+                    console.log(sheet);
+                    var XL_row_object = XLSX.utils.sheet_to_row_object_array(sheet);
+                    var json_object = JSON.stringify(XL_row_object);
+                    result.push(json_object);
+                });
+                resolutionFunc(result);
+            }
+            reader.onerror = function (ex) {
+                console.log(ex);
+            };
+
+            reader.readAsBinaryString(d);
+        });
+        return await promise.then((val) => val);
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
